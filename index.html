@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Переход между окнами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .window {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .window.active {
+            display: block;
+        }
+
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="window1" class="window active">
+        <h1>Окно 1</h1>
+        <input type="text" id="code1" placeholder="Введите код">
+        <button onclick="checkCode(1)">Проверить</button>
+        <p id="waitMessage" style="display: none;">Ждите остальных. Уже <span id="count">0</span> человек ввели код.</p>
+    </div>
+
+    <div id="window2" class="window">
+        <h1>Окно 2</h1>
+        <input type="text" id="code2" placeholder="Введите код">
+        <button onclick="checkCode(2)">Проверить</button>
+    </div>
+
+    <div id="window3" class="window">
+        <h1>Окно 3</h1>
+        <p>Поздравляем!</p>
+        <input type="text" id="code3" placeholder="Введите код для перехода">
+        <button onclick="checkCode(3)">Проверить</button>
+    </div>
+
+    <script>
+        const uniqueCodes = [
+            "code1", "code2", "code3", "code4", "code5",
+            "code6", "code7", "code8", "code9", "code10"
+        ];
+        const usedCodes = new Set();
+        let count = 0;
+
+        const codes = {
+            1: {
+                unique: uniqueCodes,
+                special: "123" // Специальный код для перехода из окна 1 в окно 2
+            },
+            2: {
+                unique: ["uniqueCode2", "uniqueCode2_1", "uniqueCode2_2"], // Два уникальных кода для перехода из окна 2 в окно 3
+                special: "456" // Специальный код для перехода из окна 2 в окно 1
+            },
+            3: {
+                unique: "uniqueCode3", // Уникальный код для окна 3
+                special: "789" // Специальный код для перехода из окна 3 в окно 1
+            }
+        };
+
+        let currentWindow = 1; // Переменная для отслеживания текущего окна
+
+        function checkCode(windowNumber) {
+            const input = document.getElementById(`code${windowNumber}`).value;
+            const correctCode = codes[windowNumber];
+
+            if (windowNumber === 1) {
+                if (correctCode.unique.includes(input) && !usedCodes.has(input)) {
+                    usedCodes.add(input);
+                    count++;
+                    document.getElementById('count').textContent = count;
+                    document.getElementById('waitMessage').style.display = 'block';
+                    if (count === 10) {
+                        currentWindow = 2;
+                        document.getElementById('window1').classList.remove('active');
+                        document.getElementById('window2').classList.add('active');
+                        resetWindowData();
+                    }
+                } else if (input === correctCode.special) {
+                    currentWindow = 2;
+                    document.getElementById('window1').classList.remove('active');
+                    document.getElementById('window2').classList.add('active');
+                    resetWindowData();
+                } else {
+                    alert("Неверный код или код уже использован!");
+                }
+            } else if (correctCode.unique.includes(input)) {
+                switch (windowNumber) {
+                    case 2:
+                        currentWindow = 3;
+                        document.getElementById('window2').classList.remove('active');
+                        document.getElementById('window3').classList.add('active');
+                        resetWindowData();
+                        break;
+                    case 3:
+                        currentWindow = 1;
+                        document.getElementById('window3').classList.remove('active');
+                        document.getElementById('window1').classList.add('active');
+                        resetWindowData();
+                        break;
+                }
+            } else if (input === correctCode.special) {
+                switch (windowNumber) {
+                    case 2:
+                        currentWindow = 1;
+                        document.getElementById('window2').classList.remove('active');
+                        document.getElementById('window1').classList.add('active');
+                        resetWindowData();
+                        break;
+                    case 3:
+                        currentWindow = 1;
+                        document.getElementById('window3').classList.remove('active');
+                        document.getElementById('window1').classList.add('active');
+                        resetWindowData();
+                        break;
+                }
+            } else {
+                alert("Неверный код!");
+            }
+        }
+
+        // Функция для обновления данных в окнах
+        function resetWindowData() {
+            usedCodes.clear();
+            count = 0;
+            document.getElementById('count').textContent = count;
+            document.getElementById('waitMessage').style.display = 'none';
+            document.getElementById('code1').value = '';
+            document.getElementById('code2').value = '';
+            document.getElementById('code3').value = '';
+        }
+
+        // При загрузке страницы проверяем, в каком окне находится большинство пользователей
+        window.onload = function() {
+            // Здесь можно добавить логику для определения текущего окна
+            // Например, если большинство пользователей находятся в окне 2, то:
+            // currentWindow = 2;
+            // document.getElementById('window1').classList.remove('active');
+            // document.getElementById('window2').classList.add('active');
+            resetWindowData();
+        };
+    </script>
+</body>
+</html>
